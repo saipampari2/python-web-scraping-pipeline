@@ -11,7 +11,7 @@ Quotes ─┘
 ```
 
 ## Python version
-Tested on **Python 3.13**. Other Python versions have not been verified.
+Developed and tested with **Python 3.13**.
 
 ## Setup
 ```bash
@@ -26,6 +26,7 @@ python -m pip install -r requirements.txt
 |---|---|
 | `requests` | HTTP with sessions, timeouts |
 | `beautifulsoup4` + `lxml` | HTML parsing (both sites are static HTML, so no browser automation is needed) |
+| `pymongo` | optional MongoDB persistence |
 | `pytest` (dev only) | tests |
 
 **Why Requests + BeautifulSoup?** Both sites are server-rendered static HTML. A headless browser
@@ -40,20 +41,43 @@ python main.py --books-details      # also fetch each book page for its descript
 python main.py --help               # all options
 ```
 Key options: `--output-dir`, `--log-dir`, `--max-pages`, `--delay`, `--timeout`, `--retries`, `--backoff`,
-`--no-author-details`, `--config`, `--verbose`.
+`--no-author-details`, `--config`, `--mongodb`, `--no-mongodb`, `--verbose`.
 
 Outputs (in `output/`) and the log (`logs/scrape.log`) are overwritten on every run.
 
 ## Configuration
 Defaults are stored in `config/config.json`. Edit it to configure sources, output/log directories, request
-timeouts, retries, rate limiting, page limits, optional detail fetching, and source URLs. Pass another JSON file
-with `--config path/to/settings.json`. Command-line options override the corresponding JSON values, for example:
+timeouts, retries, rate limiting, page limits, optional detail fetching, source URLs, and MongoDB target names.
+Pass another JSON file with `--config path/to/settings.json`. Command-line options override the corresponding JSON values, for example:
 
 ```bash
 python main.py --config config/config.json --sources quotes --delay 0
 ```
 
 Unknown settings and invalid value types are reported as configuration errors rather than silently ignored.
+
+## Optional MongoDB output
+CSV and JSON files remain the default outputs. To also save the final, cleaned, validated, de-duplicated
+records to MongoDB, set `mongodb_enabled` to `true` in `config/config.json` or pass `--mongodb`. Provide the
+connection URI through the `MONGODB_URI` environment variable; keep credentials out of source files and config:
+
+```powershell
+docker run --detach --name scraper-mongodb --publish 127.0.0.1:27017:27017 --volume scraper-mongodb-data:/data/db mongo:7
+$env:MONGODB_URI = "mongodb://localhost:27017/"
+python main.py --mongodb
+```
+
+The first command starts a local MongoDB container for development; Docker downloads the `mongo:7` image if needed.
+The port is bound to localhost only. This example has no MongoDB authentication and is for local testing only;
+use an authenticated MongoDB deployment and a protected `MONGODB_URI` for shared or production environments.
+Stop the local database with `docker stop scraper-mongodb` when finished.
+
+The default target is database `scraping_assignment`, collection `records`; `mongodb_database` and
+`mongodb_collection` can be changed in the JSON config. Each successful run **replaces that collection** with
+the current final dataset rather than appending another copy. Use a dedicated collection because its previous
+contents are replaced. MongoDB uses a staging collection and renames it over the target after inserts complete.
+The summary report records MongoDB status and document count. If MongoDB is enabled but unavailable or
+misconfigured, local output files are still written, the summary records the failure, and the CLI exits nonzero.
 
 ## Docker
 Docker is optional; the scraper can also be run directly with Python as described above.
@@ -63,10 +87,17 @@ docker build -t multi-source-scraper .
 docker run --rm -v scraper-output:/app/output -v scraper-logs:/app/logs multi-source-scraper --max-pages 3
 ```
 
-The image runs as a non-root user. The named Docker volumes preserve generated files between container runs.
+The image runs as the non-root user `app`. The named Docker volumes preserve generated files between container runs.
 Pass normal CLI arguments after the image name to override the settings in the bundled configuration file.
-The Docker image build has not been verified because the Docker Desktop Linux engine was unavailable; Docker
-is optional, and the Python workflow and tests were verified independently.
+After starting a local MongoDB container as described above, run the full scrape from PowerShell with:
+
+```powershell
+docker run --rm -v scraper-output:/app/output -v scraper-logs:/app/logs -e MONGODB_URI=mongodb://host.docker.internal:27017/ multi-source-scraper --mongodb
+```
+
+This run replaces the configured MongoDB collection, so use a dedicated collection. The Docker image was built
+and used for a full scrape: all 1,100 final records were written to the configured MongoDB 7 container and
+verified. The container ran as the non-root `app` user. Docker remains optional.
 
 ## Tests
 ```bash
@@ -76,6 +107,8 @@ python -m pytest -q
 The tests need **no internet**: `tests/mock_site.py` starts a local server that mimics both sites' markup,
 including a permanently failing category (HTTP 500), a page that fails once (503, tests retry), a book card
 with no price, and duplicate records written with different case/whitespace.
+The current test suite contains **50 tests** covering scraping, pagination, retries, cleaning, validation,
+deduplication, configuration, MongoDB persistence, and end-to-end pipeline behavior.
 
 ## Step 1 – Source observations
 | | Books to Scrape | Quotes to Scrape |
@@ -151,10 +184,11 @@ kept and later ones are **removed from the final dataset but not discarded silen
 ```
 output/final_dataset.csv        consolidated, standardised, de-duplicated records
 output/summary_report.json      per-source and total metrics, failed pages, HTTP stats, run time
-output/rejected_records.csv     records dropped by validation/cleaning, with reasons
+output/rejected_records.csv     records rejected during cleaning or validation, with reasons
 output/duplicates_report.csv    records removed as duplicates, with what they duplicate
 output/data_quality_report.json (bonus) per-source field completeness, price/rating stats, category spread,
                                 URL uniqueness, rejection and duplicate rates
+MongoDB (optional)               final records in the configured database and collection
 logs/scrape.log                 execution log
 ```
 The summary reports: collected per source, after cleaning, rejected (with reason counts), duplicates
@@ -163,7 +197,7 @@ detected/removed, final count, execution time.
 ## Bonus features implemented
 Retry with exponential backoff, JSON-configurable settings and CLI arguments (`python main.py --help`), request
 rate limiting (`--delay`), unit and end-to-end tests, a data-quality report
-(`output/data_quality_report.json`), and an optional non-root Docker image.
+(`output/data_quality_report.json`), optional MongoDB persistence, and an optional non-root Docker image.
 
 ## Project structure
 ```
@@ -171,7 +205,7 @@ main.py            CLI + logging setup
 pipeline.py        orchestration and output writing
 config/            default JSON runtime settings
 scrapers/          http_client.py, books_scraper.py, quotes_scraper.py (site-specific selectors live only here)
-processing/        schema.py, cleaning.py, validation.py, deduplication.py, quality.py
+processing/        schema.py, cleaning.py, validation.py, deduplication.py, quality.py, mongodb_store.py
 tests/             unit tests + local mock site + end-to-end tests
 Dockerfile         optional container image
 ```
@@ -184,12 +218,25 @@ Dockerfile         optional container image
 
 ## Known limitations
 - Verified live on 2026-10-06: a full run collected 1000 books (81 pages) and 100 quotes (60 pages incl. 50 author
-  pages) with 0 failed pages, 0 rejected, 0 duplicates and 1100 final records in 64.9 s. The practice sites contain no
+  pages) with 0 failed pages, 0 rejected, 0 duplicates and 1100 final records in about one minute. The practice sites contain no
   duplicates, so duplicate detection is exercised by the unit/mock tests rather than by the live data.
 - Sequential, single-threaded (deliberate, to stay polite); a full run takes about a minute.
 - No checkpoint/resume or incremental scraping; every run starts from scratch.
 - Dedup is exact-after-normalisation, not fuzzy (e.g. typos or subtitle differences are not matched).
 - Book descriptions are off by default because they cost one extra request per book.
+
+## Final validation
+| Check | Verified result |
+|---|---|
+| Automated tests | 50 passed |
+| Docker image | Built successfully; full scrape ran as non-root user `app` |
+| Live scrape | 1,000 books + 100 quotes; 0 failed pages |
+| Final records | 1,100 |
+| MongoDB | 1,100 records verified in `scraping_assignment.records` |
+| CSV | 1,100 rows; no missing required fields |
+| Rejected / duplicates | 0 / 0 |
+| Reports and logs | Generated; 0 error-level log entries |
+| Full-run duration | About one minute |
 
 ## AI usage summary
 See `AI_USAGE.md`.
