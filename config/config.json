@@ -1,0 +1,14 @@
+{
+  "sources": ["books", "quotes"],
+  "output_dir": "output",
+  "log_dir": "logs",
+  "max_pages": null,
+  "delay": 0.3,
+  "timeout": 15.0,
+  "retries": 3,
+  "backoff": 1.0,
+  "books_details": false,
+  "author_details": true,
+  "books_url": "https://books.toscrape.com/",
+  "quotes_url": "https://quotes.toscrape.com/"
+}

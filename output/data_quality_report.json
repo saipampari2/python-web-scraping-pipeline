@@ -1,0 +1,165 @@
+{
+  "overall": {
+    "final_records": 1100,
+    "rejected": 0,
+    "duplicates_removed": 0,
+    "rejection_rate_pct": 0.0,
+    "duplicate_rate_pct": 0.0
+  },
+  "per_source": {
+    "Books to Scrape": {
+      "records": 1000,
+      "distinct_source_urls": 1000,
+      "field_completeness": {
+        "source": {
+          "filled": 1000,
+          "missing": 0,
+          "completeness_pct": 100.0
+        },
+        "source_url": {
+          "filled": 1000,
+          "missing": 0,
+          "completeness_pct": 100.0
+        },
+        "name_or_title": {
+          "filled": 1000,
+          "missing": 0,
+          "completeness_pct": 100.0
+        },
+        "category": {
+          "filled": 1000,
+          "missing": 0,
+          "completeness_pct": 100.0
+        },
+        "price": {
+          "filled": 1000,
+          "missing": 0,
+          "completeness_pct": 100.0
+        },
+        "currency": {
+          "filled": 1000,
+          "missing": 0,
+          "completeness_pct": 100.0
+        },
+        "rating": {
+          "filled": 1000,
+          "missing": 0,
+          "completeness_pct": 100.0
+        },
+        "author": {
+          "filled": 0,
+          "missing": 1000,
+          "completeness_pct": 0.0
+        },
+        "tags": {
+          "filled": 0,
+          "missing": 1000,
+          "completeness_pct": 0.0
+        },
+        "description": {
+          "filled": 0,
+          "missing": 1000,
+          "completeness_pct": 0.0
+        },
+        "availability": {
+          "filled": 1000,
+          "missing": 0,
+          "completeness_pct": 100.0
+        },
+        "scraped_at": {
+          "filled": 1000,
+          "missing": 0,
+          "completeness_pct": 100.0
+        }
+      },
+      "price": {
+        "min": 10.0,
+        "max": 59.99,
+        "mean": 35.07
+      },
+      "rating_distribution": {
+        "1": 226,
+        "2": 196,
+        "3": 203,
+        "4": 179,
+        "5": 196
+      },
+      "distinct_categories": 50,
+      "largest_categories": {
+        "Default": 152,
+        "Nonfiction": 110,
+        "Sequential Art": 75,
+        "Add a comment": 67,
+        "Fiction": 65
+      }
+    },
+    "Quotes to Scrape": {
+      "records": 100,
+      "distinct_source_urls": 10,
+      "field_completeness": {
+        "source": {
+          "filled": 100,
+          "missing": 0,
+          "completeness_pct": 100.0
+        },
+        "source_url": {
+          "filled": 100,
+          "missing": 0,
+          "completeness_pct": 100.0
+        },
+        "name_or_title": {
+          "filled": 100,
+          "missing": 0,
+          "completeness_pct": 100.0
+        },
+        "category": {
+          "filled": 0,
+          "missing": 100,
+          "completeness_pct": 0.0
+        },
+        "price": {
+          "filled": 0,
+          "missing": 100,
+          "completeness_pct": 0.0
+        },
+        "currency": {
+          "filled": 0,
+          "missing": 100,
+          "completeness_pct": 0.0
+        },
+        "rating": {
+          "filled": 0,
+          "missing": 100,
+          "completeness_pct": 0.0
+        },
+        "author": {
+          "filled": 100,
+          "missing": 0,
+          "completeness_pct": 100.0
+        },
+        "tags": {
+          "filled": 97,
+          "missing": 3,
+          "completeness_pct": 97.0
+        },
+        "description": {
+          "filled": 100,
+          "missing": 0,
+          "completeness_pct": 100.0
+        },
+        "availability": {
+          "filled": 0,
+          "missing": 100,
+          "completeness_pct": 0.0
+        },
+        "scraped_at": {
+          "filled": 100,
+          "missing": 0,
+          "completeness_pct": 100.0
+        }
+      },
+      "distinct_authors": 50,
+      "avg_tags_per_record": 2.32
+    }
+  }
+}

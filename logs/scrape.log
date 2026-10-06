@@ -1,0 +1,5 @@
+2026-10-06 12:33:56,436 INFO    scrapers.books_scraper: Books: found 50 categories
+2026-10-06 12:34:25,860 INFO    scrapers.books_scraper: Books: scraped 1000 raw records from 81 pages (0 failed pages)
+2026-10-06 12:34:32,902 INFO    scrapers.quotes_scraper: Quotes: fetching 50 author pages
+2026-10-06 12:34:58,198 INFO    scrapers.quotes_scraper: Quotes: scraped 100 raw records from 60 pages (0 failed pages)
+2026-10-06 12:34:58,434 INFO    pipeline: Done: 1100 collected, 0 rejected, 0 duplicates removed, 1100 final records in 64.9s
